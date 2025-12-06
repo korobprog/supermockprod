@@ -94,7 +94,9 @@ ensureInitialized();
 
 // Helper function to get repository by entity class or table name
 // This handles minification issues in production builds
-function getRepositorySafe<T>(entityClass: any, tableName: string): Repository<T> {
+import { ObjectLiteral } from "typeorm";
+
+function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
   try {
     // Try to get by class first (works in dev)
     return dataSource.getRepository(entityClass);
