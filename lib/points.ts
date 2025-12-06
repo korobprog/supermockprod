@@ -1,4 +1,5 @@
 import { userRepository, applicationRepository, SubscriptionStatus, initDB } from "./db";
+import { isVirtualAdmin } from "./auth-helpers";
 
 const FREE_INTERVIEWS_LIMIT = 3;
 const POINTS_PER_INTERVIEW = 1;
@@ -8,6 +9,11 @@ export async function checkInterviewLimit(userId: string): Promise<{
   freeInterviewsLeft: number;
   hasActiveSubscription: boolean;
 }> {
+  // Виртуальный админ может создавать неограниченное количество карточек
+  if (isVirtualAdmin(userId)) {
+    return { canCreate: true, freeInterviewsLeft: Infinity, hasActiveSubscription: true };
+  }
+
   await initDB();
   const userRepo = await userRepository();
   const user = await userRepo.findOne({
@@ -32,6 +38,11 @@ export async function checkInterviewLimit(userId: string): Promise<{
 }
 
 export async function useInterview(userId: string): Promise<void> {
+  // Виртуальный админ не тратит собеседования
+  if (isVirtualAdmin(userId)) {
+    return;
+  }
+
   const userRepo = await userRepository();
   const user = await userRepo.findOne({
     where: { id: userId },
