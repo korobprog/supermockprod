@@ -12,13 +12,13 @@ export function Navbar() {
   const handleSignOut = async () => {
     try {
       // Выходим из сессии
-      await signOut({ 
-        redirect: false 
+      await signOut({
+        redirect: false
       });
-      
+
       // Принудительно обновляем сессию
       await update();
-      
+
       // Перезагружаем страницу для гарантированного обновления
       window.location.href = "/";
     } catch (error) {
@@ -37,6 +37,7 @@ export function Navbar() {
     { href: "/cards", label: "Карточки" },
     ...(isAuthenticated ? [
       { href: "/dashboard", label: "Личный кабинет", icon: LayoutDashboard },
+      { href: "/profile", label: "Профиль", icon: User },
       { href: "/payments", label: "Пополнение", icon: CreditCard },
     ] : []),
     ...((isAuthenticated && (session?.user as any)?.role === "ADMIN") ? [

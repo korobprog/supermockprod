@@ -32,9 +32,20 @@ pnpm install
 docker-compose up -d
 ```
 
-3. Создайте файл `.env` на основе `.env.example`:
+3. Создайте файл `.env` и добавьте необходимые переменные:
 ```bash
-cp .env.example .env
+# Database
+DATABASE_URL=postgres://supermock:supermock_password@localhost:5434/supermock_db
+
+# NextAuth
+AUTH_SECRET=your-secret-key-here
+
+# Admin Access (опционально - для быстрого доступа к админ панели)
+ADMIN_USER=admin@example.com
+ADMIN_PASS=admin123
+
+# Node Environment
+NODE_ENV=development
 ```
 
 4. Сгенерируйте Prisma Client:
@@ -56,15 +67,61 @@ pnpm dev
 
 ## Создание админа
 
-Для создания администратора используйте Prisma Studio:
+### Способ 1: Через переменные окружения (самый быстрый)
+
+Добавьте в файл `.env`:
+```env
+ADMIN_USER=admin@example.com
+ADMIN_PASS=your-secure-password
+```
+
+После этого вы сможете войти в админ панель используя эти учетные данные на странице `/login`. Этот способ не требует создания пользователя в базе данных.
+
+**Важно:** Этот способ работает только если обе переменные `ADMIN_USER` и `ADMIN_PASS` установлены в `.env`.
+
+### Способ 2: Использование скрипта (рекомендуется для продакшена)
+
+Создать нового админ пользователя или обновить существующего:
+```bash
+pnpm create:admin [email] [password] [name]
+```
+
+Примеры:
+```bash
+# Создать админа с параметрами по умолчанию (admin@example.com / admin123)
+pnpm create:admin
+
+# Создать админа с кастомными данными
+pnpm create:admin myadmin@example.com mypassword123 "Admin Name"
+
+# Обновить существующего пользователя до админа
+pnpm create:admin existing@example.com
+```
+
+### Способ 3: Через SQL
+
+Если у вас есть доступ к базе данных напрямую:
+```sql
+UPDATE "users" SET role = 'ADMIN' WHERE email = 'your-email@example.com';
+```
+
+### Способ 4: Через Prisma Studio
+
+1. Запустите Prisma Studio:
 ```bash
 pnpm prisma studio
 ```
 
-Или через SQL:
-```sql
-UPDATE "User" SET role = 'ADMIN' WHERE email = 'your-email@example.com';
-```
+2. Найдите пользователя в таблице `User`
+3. Измените поле `role` на `ADMIN`
+4. Сохраните изменения
+
+### Вход в админ панель
+
+После получения роли ADMIN:
+1. Войдите в систему через `/login` с вашими учетными данными
+2. В навигационном меню появится ссылка "Админ панель"
+3. Или перейдите напрямую по адресу `/admin`
 
 ## Структура проекта
 

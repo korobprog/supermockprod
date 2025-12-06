@@ -1,7 +1,8 @@
 import "reflect-metadata";
-import { requireAuth } from "@/lib/auth-helpers";
+import { requireAuth, isVirtualAdmin } from "@/lib/auth-helpers";
 import { userRepository, SubscriptionStatus, initDB } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
+import { UserContacts } from "@/components/user-contacts";
 import Link from "next/link";
 
 // Отключаем статическую генерацию для этой страницы
@@ -9,13 +10,28 @@ export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const user = await requireAuth();
-  await initDB();
-
-  const userRepo = await userRepository();
-  const userData = await userRepo.findOne({
-    where: { id: (user as any).id },
-    relations: ["interviewCards", "applications", "applications.card", "applications.card.user", "subscriptions"],
-  });
+  
+  // Проверяем, является ли это виртуальным админом из env
+  const userId = (user as any).id;
+  const isVirtual = isVirtualAdmin(userId);
+  
+  // Если это виртуальный админ, не делаем запрос к БД
+  let userData = null;
+  
+  if (!isVirtual) {
+    await initDB();
+    const userRepo = await userRepository();
+    
+    // Дополнительная проверка: убеждаемся, что ID валидный UUID
+    // UUID формат: 8-4-4-4-12 символов
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (userId && uuidRegex.test(userId)) {
+      userData = await userRepo.findOne({
+        where: { id: userId },
+        relations: ["interviewCards", "applications", "applications.card", "applications.card.user", "subscriptions"],
+      });
+    }
+  }
 
   if (userData) {
     userData.interviewCards = userData.interviewCards
@@ -125,9 +141,14 @@ export default async function DashboardPage() {
                       <p className="font-medium text-slate-200 group-hover:text-indigo-400 transition-colors">
                         {app.card.profession}
                       </p>
-                      <p className="text-sm text-slate-400">
-                        Создатель: {app.card.user.name || app.card.user.email}
-                      </p>
+                      <div className="mt-1">
+                        <p className="text-sm text-slate-400">
+                          Создатель: {app.card.user.name || app.card.user.email}
+                        </p>
+                        <div className="mt-1">
+                          <UserContacts user={app.card.user} />
+                        </div>
+                      </div>
                       <p className="text-sm text-slate-500">
                         Статус: <span className={
                           app.status === 'ACCEPTED' ? 'text-emerald-400' :

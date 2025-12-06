@@ -2,6 +2,13 @@ import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
+// ID виртуального админа из переменных окружения
+export const VIRTUAL_ADMIN_ID = '00000000-0000-0000-0000-000000000001';
+
+export function isVirtualAdmin(userId: string | undefined | null): boolean {
+  return userId === VIRTUAL_ADMIN_ID;
+}
+
 export async function getCurrentUser() {
   try {
     const session = await auth();

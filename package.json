@@ -17,7 +17,9 @@
     "db:stop": "docker-compose down",
     "db:restart": "docker-compose restart",
     "db:logs": "docker-compose logs -f postgres",
-    "db:reset": "docker-compose down -v && docker-compose up -d"
+    "db:reset": "docker-compose down -v && docker-compose up -d",
+    "create:admin": "npx tsx scripts/create-admin-user.ts",
+    "test:data": "npx tsx scripts/create-test-data.ts"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { AddToCalendar } from "@/components/add-to-calendar";
+import { UserContacts } from "@/components/user-contacts";
 
 interface CardDetailsProps {
   card: {
@@ -18,6 +19,9 @@ interface CardDetailsProps {
       id: string;
       name: string | null;
       email: string;
+      telegram?: string | null;
+      discord?: string | null;
+      whatsapp?: string | null;
     };
     applications: Array<{
       id: string;
@@ -28,6 +32,9 @@ interface CardDetailsProps {
         id: string;
         name: string | null;
         email: string;
+        telegram?: string | null;
+        discord?: string | null;
+        whatsapp?: string | null;
       };
     }>;
   };
@@ -100,9 +107,12 @@ export function CardDetails({ card, currentUserId, isOwner, hasApplication }: Ca
               startDate={card.scheduledAt}
             />
           </div>
-          <p className="text-slate-400">
-            <span className="font-medium text-slate-300">Создатель:</span> {card.user.name || card.user.email}
-          </p>
+          <div className="space-y-2">
+            <p className="text-slate-400">
+              <span className="font-medium text-slate-300">Создатель:</span> {card.user.name || card.user.email}
+            </p>
+            <UserContacts user={card.user} />
+          </div>
           <p className="text-slate-400">
             <span className="font-medium text-slate-300">Статус:</span>{" "}
             <span
@@ -186,6 +196,9 @@ export function CardDetails({ card, currentUserId, isOwner, hasApplication }: Ca
                 <p className="font-medium text-slate-200 mb-2">
                   {app.applicant.name || app.applicant.email}
                 </p>
+                <div className="mb-3">
+                  <UserContacts user={app.applicant} />
+                </div>
                 <p className="text-sm text-slate-400 mb-1">
                   Статус:{" "}
                   <span

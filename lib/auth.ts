@@ -23,6 +23,23 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
           return null;
         }
 
+        // Проверка админ доступа через переменные окружения
+        const adminUser = process.env.ADMIN_USER;
+        const adminPass = process.env.ADMIN_PASS;
+
+        if (adminUser && adminPass && email === adminUser && password === adminPass) {
+          // Возвращаем виртуального админ пользователя с валидным UUID
+          // Используем специальный UUID для виртуального админа
+          const { VIRTUAL_ADMIN_ID } = await import("./auth-helpers");
+          return {
+            id: VIRTUAL_ADMIN_ID,
+            email: adminUser,
+            name: 'Admin',
+            role: 'ADMIN',
+          };
+        }
+
+        // Обычная проверка через базу данных
         // Ensure DB is initialized
         await initDB();
         // Lazy import to avoid circular dependency
@@ -66,14 +83,34 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        // Защита: если ID не валидный UUID и это не виртуальный админ, используем виртуальный админ ID
+        const { VIRTUAL_ADMIN_ID } = await import("./auth-helpers");
+        const userId = user.id;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        
+        // Если ID не валидный UUID (например, старый "admin-env-user"), заменяем на виртуальный админ ID
+        if (userId && !uuidRegex.test(userId) && (user as any).role === 'ADMIN') {
+          token.id = VIRTUAL_ADMIN_ID;
+        } else {
+          token.id = userId;
+        }
         token.role = (user as any).role;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.id;
+        // Защита: если ID в токене не валидный UUID, заменяем на виртуальный админ ID
+        const { VIRTUAL_ADMIN_ID, isVirtualAdmin } = await import("./auth-helpers");
+        const tokenId = token.id as string;
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        
+        // Если ID не валидный UUID и роль ADMIN, используем виртуальный админ ID
+        if (tokenId && !uuidRegex.test(tokenId) && token.role === 'ADMIN') {
+          (session.user as any).id = VIRTUAL_ADMIN_ID;
+        } else {
+          (session.user as any).id = tokenId;
+        }
         (session.user as any).role = token.role;
       }
       return session;

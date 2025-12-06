@@ -28,6 +28,15 @@ export class User {
   @Column({ type: "varchar", nullable: true })
   name!: string | null;
 
+  @Column({ type: "varchar", nullable: true })
+  telegram!: string | null;
+
+  @Column({ type: "varchar", nullable: true })
+  discord!: string | null;
+
+  @Column({ type: "varchar", nullable: true })
+  whatsapp!: string | null;
+
   @Column({ type: "varchar" })
   password!: string;
 

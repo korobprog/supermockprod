@@ -1,0 +1,42 @@
+Starting test data creation script...
+Initializing DataSource...
+DataSource initialized.
+
+=== Processing user: ivan@test.com ===
+Creating new user: ivan@test.com...
+User ivan@test.com created successfully.
+Creating payments for ivan@test.com...
+  ✓ Created payment: 100 баллов (ID: d3165458-493f-49fd-a703-ac0e3a3aafee)
+  ✓ Created payment: 200 баллов (ID: 1e319199-4407-4a9c-b025-95ad977d7b41)
+
+=== Processing user: maria@test.com ===
+Creating new user: maria@test.com...
+User maria@test.com created successfully.
+Creating payments for maria@test.com...
+  ✓ Created payment: 150 баллов (ID: b442bedd-8ed2-4f0b-a2df-44cfd04c0e94)
+
+=== Processing user: alex@test.com ===
+Creating new user: alex@test.com...
+User alex@test.com created successfully.
+Creating payments for alex@test.com...
+  ✓ Created payment: 300 баллов (ID: 68481080-ff41-45a4-bb9a-e94021b55ce8)
+  ✓ Created payment: 100 баллов (ID: f093ccab-b990-4e1d-a8cd-005c7fde55be)
+
+=== Processing user: elena@test.com ===
+Creating new user: elena@test.com...
+User elena@test.com created successfully.
+Creating payments for elena@test.com...
+  ✓ Created payment: 50 баллов (ID: e0e47754-a3a7-4ed8-84a1-1d5258cc25f7)
+
+=== Statistics ===
+Total users: 9
+Total payments: 7
+Pending payments: 7
+
+Done. Test data created successfully!
+
+Test users credentials:
+Email: ivan@test.com, Password: test123
+Email: maria@test.com, Password: test123
+Email: alex@test.com, Password: test123
+Email: elena@test.com, Password: test123

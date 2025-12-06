@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
+import { UserContacts } from "@/components/user-contacts";
 
 export default function AcceptApplicationPage({
   params,
@@ -86,6 +87,9 @@ export default function AcceptApplicationPage({
           <h2 className="text-xl font-bold text-white mb-4">
             От: {application.applicant.name || application.applicant.email}
           </h2>
+          <div className="mb-4">
+            <UserContacts user={application.applicant} />
+          </div>
           {application.scheduledAt && (
             <p className="text-sm text-slate-400 mb-2">
               Время ответного собеседования:{" "}
@@ -96,10 +100,10 @@ export default function AcceptApplicationPage({
             Статус:{" "}
             <span
               className={`font-medium ${application.status === "PENDING"
-                  ? "text-amber-400"
-                  : application.status === "ACCEPTED"
-                    ? "text-emerald-400"
-                    : "text-red-400"
+                ? "text-amber-400"
+                : application.status === "ACCEPTED"
+                  ? "text-emerald-400"
+                  : "text-red-400"
                 }`}
             >
               {application.status === "PENDING"
