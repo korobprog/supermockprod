@@ -27,17 +27,24 @@ export default async function CardsPage({
       .orderBy("card.createdAt", "DESC");
 
     if (techStackFilter) {
-      query = query.where(":techStack = ANY(string_to_array(card.techStack, ','))")
-        .setParameter("techStack", techStackFilter);
+      // Используем LIKE для поиска в simple-array поле (хранится как строка с запятыми)
+      // Ищем точное совпадение с учетом разделителей
+      query = query.where(
+        "(card.techStack = :techStack OR card.techStack LIKE :techStackStart OR card.techStack LIKE :techStackMiddle OR card.techStack LIKE :techStackEnd)",
+        { 
+          techStack: techStackFilter,
+          techStackStart: `${techStackFilter},%`,
+          techStackMiddle: `%,${techStackFilter},%`,
+          techStackEnd: `%,${techStackFilter}`
+        }
+      );
     }
 
     if (statusFilter) {
       if (techStackFilter) {
-        query = query.andWhere("card.status = :status")
-          .setParameter("status", statusFilter);
+        query = query.andWhere("card.status = :status", { status: statusFilter });
       } else {
-        query = query.where("card.status = :status")
-          .setParameter("status", statusFilter);
+        query = query.where("card.status = :status", { status: statusFilter });
       }
     }
 
@@ -89,6 +96,8 @@ export default async function CardsPage({
     );
   } catch (error) {
     console.error("Error in CardsPage:", error);
+    console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+    console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
     
     // Return error page instead of crashing
     return (
@@ -102,9 +111,14 @@ export default async function CardsPage({
             <p className="text-red-300">
               Произошла ошибка при загрузке карточек собеседований. Пожалуйста, попробуйте обновить страницу.
             </p>
-            {process.env.NODE_ENV === "development" && (
+            {(process.env.NODE_ENV === "development" || process.env.NODE_ENV !== "production") && (
               <pre className="mt-4 text-xs text-red-200 overflow-auto">
                 {error instanceof Error ? error.message : String(error)}
+                {error instanceof Error && error.stack && (
+                  <div className="mt-2 text-xs opacity-75">
+                    {error.stack}
+                  </div>
+                )}
               </pre>
             )}
           </div>

@@ -23,17 +23,24 @@ export async function GET(request: Request) {
       .orderBy("card.createdAt", "DESC");
 
     if (techStackFilter) {
-      query = query.where(":techStack = ANY(string_to_array(card.techStack, ','))")
-        .setParameter("techStack", techStackFilter);
+      // Используем LIKE для поиска в simple-array поле (хранится как строка с запятыми)
+      // Ищем точное совпадение с учетом разделителей
+      query = query.where(
+        "(card.techStack = :techStack OR card.techStack LIKE :techStackStart OR card.techStack LIKE :techStackMiddle OR card.techStack LIKE :techStackEnd)",
+        { 
+          techStack: techStackFilter,
+          techStackStart: `${techStackFilter},%`,
+          techStackMiddle: `%,${techStackFilter},%`,
+          techStackEnd: `%,${techStackFilter}`
+        }
+      );
     }
 
     if (statusFilter) {
       if (techStackFilter) {
-        query = query.andWhere("card.status = :status")
-          .setParameter("status", statusFilter);
+        query = query.andWhere("card.status = :status", { status: statusFilter });
       } else {
-        query = query.where("card.status = :status")
-          .setParameter("status", statusFilter);
+        query = query.where("card.status = :status", { status: statusFilter });
       }
     }
 
