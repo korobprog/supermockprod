@@ -3,6 +3,9 @@ import { paymentRepository, userRepository, interviewCardRepository, application
 import { Navbar } from "@/components/navbar";
 import { AdminPanel } from "@/components/admin-panel";
 
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
   await requireAdmin();
 

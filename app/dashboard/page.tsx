@@ -4,6 +4,9 @@ import { userRepository, SubscriptionStatus, initDB } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
 import Link from "next/link";
 
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const user = await requireAuth();
   await initDB();

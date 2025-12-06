@@ -2,6 +2,9 @@ import { requireAuth } from "@/lib/auth-helpers";
 import { feedbackRepository } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
 
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
 export default async function FeedbackPage() {
   const user = await requireAuth();
   const feedbackRepo = await feedbackRepository();

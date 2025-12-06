@@ -4,6 +4,9 @@ import { Navbar } from "@/components/navbar";
 import { CardDetails } from "@/components/card-details";
 import { notFound } from "next/navigation";
 
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
 export default async function CardDetailPage({
   params,
 }: {

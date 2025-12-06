@@ -5,6 +5,9 @@ import Link from "next/link";
 import { CardFilters } from "@/components/card-filters";
 import { CardList } from "@/components/card-list";
 
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
 export default async function CardsPage({
   searchParams,
 }: {
