@@ -97,32 +97,32 @@ ensureInitialized();
 // the database should be initialized
 export async function userRepository(): Promise<Repository<User>> {
   await initDB();
-  return dataSource.getRepository("User");
+  return dataSource.getRepository(User);
 }
 
 export async function interviewCardRepository(): Promise<Repository<InterviewCard>> {
   await initDB();
-  return dataSource.getRepository("InterviewCard");
+  return dataSource.getRepository(InterviewCard);
 }
 
 export async function applicationRepository(): Promise<Repository<Application>> {
   await initDB();
-  return dataSource.getRepository("Application");
+  return dataSource.getRepository(Application);
 }
 
 export async function feedbackRepository(): Promise<Repository<Feedback>> {
   await initDB();
-  return dataSource.getRepository("Feedback");
+  return dataSource.getRepository(Feedback);
 }
 
 export async function subscriptionRepository(): Promise<Repository<Subscription>> {
   await initDB();
-  return dataSource.getRepository("Subscription");
+  return dataSource.getRepository(Subscription);
 }
 
 export async function paymentRepository(): Promise<Repository<Payment>> {
   await initDB();
-  return dataSource.getRepository("Payment");
+  return dataSource.getRepository(Payment);
 }
 
 // Export entities
