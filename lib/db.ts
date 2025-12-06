@@ -104,11 +104,27 @@ function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName:
   // Find entity metadata by table name (works even with minified classes)
   const metadata = dataSource.entityMetadatas.find(m => m.tableName === tableName);
   if (!metadata) {
-    throw new Error(`Entity metadata not found for table: ${tableName}`);
+    throw new Error(`Entity metadata not found for table: ${tableName}. Available tables: ${dataSource.entityMetadatas.map(m => m.tableName).join(", ")}`);
   }
   
-  // Use the target from metadata (this is the actual entity class/constructor)
-  return dataSource.getRepository(metadata.target) as Repository<T>;
+  // Try to get repository using the target from metadata
+  // If that fails (due to minification), use the manager to get repository by table name
+  try {
+    return dataSource.getRepository(metadata.target) as Repository<T>;
+  } catch (error) {
+    // Fallback: use manager to get repository by entity name
+    // The entity name is stored in metadata.name
+    const entityName = metadata.name;
+    if (entityName) {
+      try {
+        return dataSource.manager.getRepository(entityName) as Repository<T>;
+      } catch {
+        // Last resort: try to get by table name directly
+        return dataSource.manager.getRepository(tableName) as Repository<T>;
+      }
+    }
+    throw error;
+  }
 }
 
 // Sync repository getters (for backwards compatibility)
