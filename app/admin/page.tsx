@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth-helpers";
+import { requireAdmin, isVirtualAdmin } from "@/lib/auth-helpers";
 import { paymentRepository, userRepository, interviewCardRepository, applicationRepository, PaymentStatus } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
 import { AdminPanel } from "@/components/admin-panel";
@@ -7,30 +7,49 @@ import { AdminPanel } from "@/components/admin-panel";
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
-  const paymentRepo = await paymentRepository();
-  const userRepo = await userRepository();
-  const cardRepo = await interviewCardRepository();
-  const appRepo = await applicationRepository();
+  // Проверяем, является ли это виртуальным админом
+  const isVirtual = isVirtualAdmin((admin as any).id);
 
-  const payments = await paymentRepo.find({
-    relations: ["user"],
-    order: {
-      createdAt: "DESC",
-    },
-  });
+  let stats;
+  let plainPayments;
 
-  const stats = {
-    totalUsers: await userRepo.count(),
-    totalCards: await cardRepo.count(),
-    totalApplications: await appRepo.count(),
-    totalPayments: await paymentRepo.count(),
-    pendingPayments: payments.filter((p) => p.status === PaymentStatus.PENDING).length,
-  };
+  if (isVirtual) {
+    // Для виртуального админа показываем пустую статистику
+    stats = {
+      totalUsers: 0,
+      totalCards: 0,
+      totalApplications: 0,
+      totalPayments: 0,
+      pendingPayments: 0,
+    };
+    plainPayments = [];
+  } else {
+    // Для обычного админа загружаем данные из БД
+    const paymentRepo = await paymentRepository();
+    const userRepo = await userRepository();
+    const cardRepo = await interviewCardRepository();
+    const appRepo = await applicationRepository();
 
-  // Преобразуем TypeORM сущности в простые объекты для передачи в Client Component
-  const plainPayments = JSON.parse(JSON.stringify(payments));
+    const payments = await paymentRepo.find({
+      relations: ["user"],
+      order: {
+        createdAt: "DESC",
+      },
+    });
+
+    stats = {
+      totalUsers: await userRepo.count(),
+      totalCards: await cardRepo.count(),
+      totalApplications: await appRepo.count(),
+      totalPayments: await paymentRepo.count(),
+      pendingPayments: payments.filter((p) => p.status === PaymentStatus.PENDING).length,
+    };
+
+    // Преобразуем TypeORM сущности в простые объекты для передачи в Client Component
+    plainPayments = JSON.parse(JSON.stringify(payments));
+  }
 
   return (
     <div className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8">
