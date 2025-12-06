@@ -92,8 +92,13 @@ export async function POST(request: Request) {
       relations: ["user"],
     });
 
-    // Используем одно собеседование
-    await useInterview((user as any).id);
+    // Используем одно собеседование (не блокируем создание карточки при ошибке)
+    try {
+      await useInterview((user as any).id);
+    } catch (error) {
+      // Логируем ошибку, но не прерываем создание карточки
+      console.error("Error in useInterview (non-blocking):", error);
+    }
 
     return NextResponse.json(savedCard, { status: 201 });
   } catch (error) {

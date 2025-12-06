@@ -48,29 +48,39 @@ export async function useInterview(userId: string): Promise<void> {
     return;
   }
 
-  const userRepo = await userRepository();
-  const user = await userRepo.findOne({
-    where: { id: userId },
-    relations: ["subscriptions"],
-  });
+  try {
+    await initDB();
+    const userRepo = await userRepository();
+    const user = await userRepo.findOne({
+      where: { id: userId },
+      relations: ["subscriptions"],
+    });
 
-  if (!user) {
-    throw new Error("Пользователь не найден");
-  }
+    if (!user) {
+      // Если пользователь не найден, просто логируем и возвращаемся
+      // Это может произойти для виртуального админа или если пользователь был удален
+      console.warn(`User not found for useInterview: ${userId}`);
+      return;
+    }
 
-  // Админы не тратят собеседования
-  if (user.role === UserRole.ADMIN) {
-    return;
-  }
+    // Админы не тратят собеседования
+    if (user.role === UserRole.ADMIN) {
+      return;
+    }
 
-  const hasActiveSubscription = user.subscriptions.some(
-    (sub) => sub.status === SubscriptionStatus.ACTIVE && sub.endDate >= new Date()
-  );
+    const hasActiveSubscription = user.subscriptions.some(
+      (sub) => sub.status === SubscriptionStatus.ACTIVE && sub.endDate >= new Date()
+    );
 
-  // Если нет активной подписки, увеличиваем счетчик бесплатных собеседований
-  if (!hasActiveSubscription) {
-    user.freeInterviewsUsed += 1;
-    await userRepo.save(user);
+    // Если нет активной подписки, увеличиваем счетчик бесплатных собеседований
+    if (!hasActiveSubscription) {
+      user.freeInterviewsUsed += 1;
+      await userRepo.save(user);
+    }
+  } catch (error) {
+    // Логируем ошибку, но не прерываем создание карточки
+    console.error("Error in useInterview:", error);
+    // Не выбрасываем ошибку, чтобы не прервать создание карточки
   }
 }
 
