@@ -75,16 +75,22 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
-        // Виртуальный админ не может обновлять профиль
-        if (isVirtualAdmin(currentUser.id)) {
-            return NextResponse.json(
-                { error: "Виртуальный админ не может обновлять профиль" },
-                { status: 403 }
-            );
-        }
-
         const body = await req.json();
         const validatedData = updateProfileSchema.parse(body);
+
+        // Если это виртуальный админ, возвращаем обновленные данные без сохранения в БД
+        if (isVirtualAdmin(currentUser.id)) {
+            return NextResponse.json({
+                id: VIRTUAL_ADMIN_ID,
+                email: currentUser.email,
+                name: validatedData.name ?? currentUser.name ?? 'Admin',
+                telegram: validatedData.telegram ?? null,
+                discord: validatedData.discord ?? null,
+                whatsapp: validatedData.whatsapp ?? null,
+                role: 'ADMIN',
+                points: 0,
+            });
+        }
 
         const userRepo = await userRepository();
 
