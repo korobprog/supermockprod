@@ -92,18 +92,17 @@ export async function initDB(): Promise<DataSource> {
 // Start initialization eagerly
 ensureInitialized();
 
-// Helper function to get repository by entity class or table name
-// This handles minification issues in production builds
-import { ObjectLiteral } from "typeorm";
-
+// Helper function to get repository by table name
+// Uses table name directly to avoid minification issues in production builds
 function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
-  try {
-    // Try to get by class first (works in dev)
-    return dataSource.getRepository(entityClass);
-  } catch (error) {
-    // Fallback to table name (works in production with minified code)
-    return dataSource.getRepository(tableName) as Repository<T>;
+  // In production, classes are minified, so we use table name directly
+  // Find the entity metadata by table name
+  const metadata = dataSource.entityMetadatas.find(m => m.tableName === tableName);
+  if (metadata) {
+    return dataSource.getRepository(metadata.target) as Repository<T>;
   }
+  // Fallback to table name string
+  return dataSource.getRepository(tableName) as Repository<T>;
 }
 
 // Sync repository getters (for backwards compatibility)
