@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { DataSource, Repository } from "typeorm";
+import { DataSource, Repository, ObjectLiteral } from "typeorm";
 import { User } from "@/src/entities/User";
 import { InterviewCard } from "@/src/entities/InterviewCard";
 import { Application } from "@/src/entities/Application";
@@ -95,6 +95,11 @@ ensureInitialized();
 // Helper function to get repository by table name
 // Uses table name directly to avoid minification issues in production builds
 function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
+  // Ensure dataSource is initialized
+  if (!dataSource.isInitialized) {
+    throw new Error("DataSource is not initialized. Call initDB() first.");
+  }
+  
   // In production, classes are minified, so we use table name directly
   // Find the entity metadata by table name
   const metadata = dataSource.entityMetadatas.find(m => m.tableName === tableName);
