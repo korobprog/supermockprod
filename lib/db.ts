@@ -92,39 +92,33 @@ export async function initDB(): Promise<DataSource> {
 // Start initialization eagerly
 ensureInitialized();
 
+// Map table names to original entity classes
+// This avoids minification issues in production builds
+const tableToEntityMap: Record<string, any> = {
+  "users": User,
+  "interview_cards": InterviewCard,
+  "applications": Application,
+  "feedbacks": Feedback,
+  "subscriptions": Subscription,
+  "payments": Payment,
+};
+
 // Helper function to get repository by table name
-// Uses entityMetadatas to find the correct entity class
-// This handles minification issues in production builds
+// Uses original entity classes to avoid minification issues
 function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
   // Ensure dataSource is initialized
   if (!dataSource.isInitialized) {
     throw new Error("DataSource is not initialized. Call initDB() first.");
   }
   
-  // Find entity metadata by table name (works even with minified classes)
-  const metadata = dataSource.entityMetadatas.find(m => m.tableName === tableName);
-  if (!metadata) {
-    throw new Error(`Entity metadata not found for table: ${tableName}. Available tables: ${dataSource.entityMetadatas.map(m => m.tableName).join(", ")}`);
+  // Use the original entity class from our map (not minified)
+  const originalEntityClass = tableToEntityMap[tableName];
+  if (!originalEntityClass) {
+    throw new Error(`Entity class not found for table: ${tableName}`);
   }
   
-  // Try to get repository using the target from metadata
-  // If that fails (due to minification), use the manager to get repository by table name
-  try {
-    return dataSource.getRepository(metadata.target) as Repository<T>;
-  } catch (error) {
-    // Fallback: use manager to get repository by entity name
-    // The entity name is stored in metadata.name
-    const entityName = metadata.name;
-    if (entityName) {
-      try {
-        return dataSource.manager.getRepository(entityName) as Repository<T>;
-      } catch {
-        // Last resort: try to get by table name directly
-        return dataSource.manager.getRepository(tableName) as Repository<T>;
-      }
-    }
-    throw error;
-  }
+  // Get repository using the original (non-minified) entity class
+  return dataSource.getRepository(originalEntityClass) as Repository<T>;
 }
 
 // Sync repository getters (for backwards compatibility)
