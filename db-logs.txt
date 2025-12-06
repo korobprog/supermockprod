@@ -1,0 +1,90 @@
+time="2025-12-06T10:55:53+10:00" level=warning msg="/home/maxim/Documents/SuperMock2/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+supermock-postgres  | The files belonging to this database system will be owned by user "postgres".
+supermock-postgres  | This user must also own the server process.
+supermock-postgres  | 
+supermock-postgres  | The database cluster will be initialized with locale "en_US.utf8".
+supermock-postgres  | The default database encoding has accordingly been set to "UTF8".
+supermock-postgres  | The default text search configuration will be set to "english".
+supermock-postgres  | 
+supermock-postgres  | Data page checksums are disabled.
+supermock-postgres  | 
+supermock-postgres  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+supermock-postgres  | creating subdirectories ... ok
+supermock-postgres  | selecting dynamic shared memory implementation ... posix
+supermock-postgres  | selecting default max_connections ... 100
+supermock-postgres  | selecting default shared_buffers ... 128MB
+supermock-postgres  | selecting default time zone ... UTC
+supermock-postgres  | creating configuration files ... ok
+supermock-postgres  | running bootstrap script ... ok
+supermock-postgres  | sh: locale: not found
+supermock-postgres  | 2025-12-05 12:37:16.922 UTC [35] WARNING:  no usable system locales were found
+supermock-postgres  | performing post-bootstrap initialization ... ok
+supermock-postgres  | initdb: warning: enabling "trust" authentication for local connections
+supermock-postgres  | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+supermock-postgres  | syncing data to disk ... ok
+supermock-postgres  | 
+supermock-postgres  | 
+supermock-postgres  | Success. You can now start the database server using:
+supermock-postgres  | 
+supermock-postgres  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+supermock-postgres  | 
+supermock-postgres  | waiting for server to start....2025-12-05 12:37:30.606 UTC [41] LOG:  starting PostgreSQL 16.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+supermock-postgres  | 2025-12-05 12:37:30.723 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+supermock-postgres  | 2025-12-05 12:37:30.748 UTC [44] LOG:  database system was shut down at 2025-12-05 12:37:17 UTC
+supermock-postgres  | 2025-12-05 12:37:30.761 UTC [41] LOG:  database system is ready to accept connections
+supermock-postgres  |  done
+supermock-postgres  | server started
+supermock-postgres  | CREATE DATABASE
+supermock-postgres  | 
+supermock-postgres  | 
+supermock-postgres  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+supermock-postgres  | 
+supermock-postgres  | waiting for server to shut down....2025-12-05 12:37:31.102 UTC [41] LOG:  received fast shutdown request
+supermock-postgres  | 2025-12-05 12:37:31.111 UTC [41] LOG:  aborting any active transactions
+supermock-postgres  | 2025-12-05 12:37:31.114 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+supermock-postgres  | 2025-12-05 12:37:31.115 UTC [42] LOG:  shutting down
+supermock-postgres  | 2025-12-05 12:37:31.323 UTC [42] LOG:  checkpoint starting: shutdown immediate
+supermock-postgres  | ..2025-12-05 12:37:33.246 UTC [60] FATAL:  the database system is shutting down
+supermock-postgres  | ...2025-12-05 12:37:36.775 UTC [42] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.238 s, sync=4.999 s, total=5.661 s; sync files=301, longest=0.427 s, average=0.017 s; distance=4272 kB, estimate=4272 kB; lsn=0/191E928, redo lsn=0/191E928
+supermock-postgres  | 2025-12-05 12:37:36.784 UTC [41] LOG:  database system is shut down
+supermock-postgres  |  done
+supermock-postgres  | server stopped
+supermock-postgres  | 
+supermock-postgres  | PostgreSQL init process complete; ready for start up.
+supermock-postgres  | 
+supermock-postgres  | 2025-12-05 12:37:36.862 UTC [1] LOG:  starting PostgreSQL 16.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+supermock-postgres  | 2025-12-05 12:37:36.862 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+supermock-postgres  | 2025-12-05 12:37:36.863 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+supermock-postgres  | 2025-12-05 12:37:36.879 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+supermock-postgres  | 2025-12-05 12:37:36.897 UTC [64] LOG:  database system was shut down at 2025-12-05 12:37:36 UTC
+supermock-postgres  | 2025-12-05 12:37:36.917 UTC [1] LOG:  database system is ready to accept connections
+supermock-postgres  | 2025-12-05 12:42:36.995 UTC [62] LOG:  checkpoint starting: time
+supermock-postgres  | 2025-12-05 12:42:41.297 UTC [62] LOG:  checkpoint complete: wrote 45 buffers (0.3%); 0 WAL file(s) added, 0 removed, 0 recycled; write=4.210 s, sync=0.042 s, total=4.303 s; sync files=12, longest=0.013 s, average=0.004 s; distance=260 kB, estimate=260 kB; lsn=0/195FC40, redo lsn=0/195FC08
+supermock-postgres  | 2025-12-05 13:56:47.017 UTC [274] ERROR:  relation "users" does not exist at character 22
+supermock-postgres  | 2025-12-05 13:56:47.017 UTC [274] STATEMENT:  SELECT COUNT(*) FROM users;
+supermock-postgres  | 2025-12-05 14:02:37.643 UTC [62] LOG:  checkpoint starting: time
+supermock-postgres  | 2025-12-05 14:02:46.938 UTC [62] LOG:  checkpoint complete: wrote 89 buffers (0.5%); 0 WAL file(s) added, 0 removed, 0 recycled; write=8.830 s, sync=0.420 s, total=9.295 s; sync files=82, longest=0.016 s, average=0.006 s; distance=382 kB, estimate=382 kB; lsn=0/19BF6D0, redo lsn=0/19BF698
+supermock-postgres  | 2025-12-05 14:07:38.038 UTC [62] LOG:  checkpoint starting: time
+supermock-postgres  | 2025-12-05 14:07:39.135 UTC [62] LOG:  checkpoint complete: wrote 11 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=1.004 s, sync=0.054 s, total=1.098 s; sync files=7, longest=0.010 s, average=0.008 s; distance=1 kB, estimate=344 kB; lsn=0/19BFE10, redo lsn=0/19BFDD8
+supermock-postgres  | 2025-12-05 14:08:59.523 UTC [1] LOG:  received fast shutdown request
+supermock-postgres  | 2025-12-05 14:08:59.563 UTC [1] LOG:  aborting any active transactions
+supermock-postgres  | 2025-12-05 14:08:59.567 UTC [1] LOG:  background worker "logical replication launcher" (PID 67) exited with exit code 1
+supermock-postgres  | 2025-12-05 14:08:59.571 UTC [62] LOG:  shutting down
+supermock-postgres  | 2025-12-05 14:08:59.595 UTC [62] LOG:  checkpoint starting: shutdown immediate
+supermock-postgres  | 2025-12-05 14:08:59.760 UTC [62] LOG:  checkpoint complete: wrote 0 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.001 s, total=0.190 s; sync files=0, longest=0.000 s, average=0.000 s; distance=0 kB, estimate=310 kB; lsn=0/19BFEC0, redo lsn=0/19BFEC0
+supermock-postgres  | 2025-12-05 14:08:59.775 UTC [1] LOG:  database system is shut down
+supermock-postgres  | 
+supermock-postgres  | PostgreSQL Database directory appears to contain a database; Skipping initialization
+supermock-postgres  | 
+supermock-postgres  | 2025-12-06 00:13:19.173 UTC [1] LOG:  starting PostgreSQL 16.10 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+supermock-postgres  | 2025-12-06 00:13:19.173 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+supermock-postgres  | 2025-12-06 00:13:19.173 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+supermock-postgres  | 2025-12-06 00:13:19.209 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+supermock-postgres  | 2025-12-06 00:13:19.266 UTC [29] LOG:  database system was shut down at 2025-12-05 14:08:59 UTC
+supermock-postgres  | 2025-12-06 00:13:19.349 UTC [1] LOG:  database system is ready to accept connections
+supermock-postgres  | 2025-12-06 00:18:19.306 UTC [27] LOG:  checkpoint starting: time
+supermock-postgres  | 2025-12-06 00:18:19.389 UTC [27] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.001 s, sync=0.033 s, total=0.083 s; sync files=2, longest=0.025 s, average=0.017 s; distance=0 kB, estimate=0 kB; lsn=0/19BFFA8, redo lsn=0/19BFF70
+supermock-postgres  | 2025-12-06 00:33:19.644 UTC [27] LOG:  checkpoint starting: time
+supermock-postgres  | 2025-12-06 00:33:20.583 UTC [27] LOG:  checkpoint complete: wrote 9 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.804 s, sync=0.072 s, total=0.940 s; sync files=9, longest=0.014 s, average=0.008 s; distance=2 kB, estimate=2 kB; lsn=0/19C0A88, redo lsn=0/19C0A50
+supermock-postgres  | 2025-12-06 00:50:00.882 UTC [166] ERROR:  relation "User" does not exist at character 22
+supermock-postgres  | 2025-12-06 00:50:00.882 UTC [166] STATEMENT:  SELECT COUNT(*) FROM "User";

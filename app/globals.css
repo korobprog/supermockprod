@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@source "../pages/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../components/**/*.{js,ts,jsx,tsx,mdx}";
+@source "../app/**/*.{js,ts,jsx,tsx,mdx}";
+
+@theme {
+  --color-background: #0f172a;
+  --color-foreground: #f8fafc;
+  
+  --color-primary: #6366f1;
+  --color-primary-foreground: #ffffff;
+  
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #f8fafc;
+  
+  --color-accent: #38bdf8;
+  --color-accent-foreground: #0f172a;
+  
+  --color-muted: #334155;
+  --color-muted-foreground: #94a3b8;
+  
+  --color-card: #1e293b;
+  --color-card-foreground: #f8fafc;
+  
+  --color-border: #334155;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-900 text-slate-50 antialiased;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(56, 189, 248, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/5 backdrop-blur-lg border border-white/10;
+  }
+  
+  .glass-hover {
+    @apply hover:bg-white/10 transition-colors duration-200;
+  }
+}
+
+@utility text-balance {
+  text-wrap: balance;
+}
+
