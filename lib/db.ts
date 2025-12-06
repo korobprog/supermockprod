@@ -92,37 +92,49 @@ export async function initDB(): Promise<DataSource> {
 // Start initialization eagerly
 ensureInitialized();
 
+// Helper function to get repository by entity class or table name
+// This handles minification issues in production builds
+function getRepositorySafe<T>(entityClass: any, tableName: string): Repository<T> {
+  try {
+    // Try to get by class first (works in dev)
+    return dataSource.getRepository(entityClass);
+  } catch (error) {
+    // Fallback to table name (works in production with minified code)
+    return dataSource.getRepository(tableName) as Repository<T>;
+  }
+}
+
 // Sync repository getters (for backwards compatibility)
 // These rely on the fact that by the time a server component runs,
 // the database should be initialized
 export async function userRepository(): Promise<Repository<User>> {
   await initDB();
-  return dataSource.getRepository(User);
+  return getRepositorySafe<User>(User, "users");
 }
 
 export async function interviewCardRepository(): Promise<Repository<InterviewCard>> {
   await initDB();
-  return dataSource.getRepository(InterviewCard);
+  return getRepositorySafe<InterviewCard>(InterviewCard, "interview_cards");
 }
 
 export async function applicationRepository(): Promise<Repository<Application>> {
   await initDB();
-  return dataSource.getRepository(Application);
+  return getRepositorySafe<Application>(Application, "applications");
 }
 
 export async function feedbackRepository(): Promise<Repository<Feedback>> {
   await initDB();
-  return dataSource.getRepository(Feedback);
+  return getRepositorySafe<Feedback>(Feedback, "feedbacks");
 }
 
 export async function subscriptionRepository(): Promise<Repository<Subscription>> {
   await initDB();
-  return dataSource.getRepository(Subscription);
+  return getRepositorySafe<Subscription>(Subscription, "subscriptions");
 }
 
 export async function paymentRepository(): Promise<Repository<Payment>> {
   await initDB();
-  return dataSource.getRepository(Payment);
+  return getRepositorySafe<Payment>(Payment, "payments");
 }
 
 // Export entities
