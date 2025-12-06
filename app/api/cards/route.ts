@@ -23,14 +23,17 @@ export async function GET(request: Request) {
       .orderBy("card.createdAt", "DESC");
 
     if (techStackFilter) {
-      query = query.where(":techStack = ANY(string_to_array(card.techStack, ','))", { techStack: techStackFilter });
+      query = query.where(":techStack = ANY(string_to_array(card.techStack, ','))")
+        .setParameter("techStack", techStackFilter);
     }
 
     if (statusFilter) {
       if (techStackFilter) {
-        query = query.andWhere("card.status = :status", { status: statusFilter });
+        query = query.andWhere("card.status = :status")
+          .setParameter("status", statusFilter);
       } else {
-        query = query.where("card.status = :status", { status: statusFilter });
+        query = query.where("card.status = :status")
+          .setParameter("status", statusFilter);
       }
     }
 
