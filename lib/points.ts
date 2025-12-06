@@ -1,4 +1,4 @@
-import { userRepository, applicationRepository, SubscriptionStatus, initDB } from "./db";
+import { userRepository, applicationRepository, SubscriptionStatus, initDB, UserRole } from "./db";
 import { isVirtualAdmin } from "./auth-helpers";
 
 const FREE_INTERVIEWS_LIMIT = 3;
@@ -23,6 +23,11 @@ export async function checkInterviewLimit(userId: string): Promise<{
 
   if (!user) {
     return { canCreate: false, freeInterviewsLeft: 0, hasActiveSubscription: false };
+  }
+
+  // Админы могут создавать неограниченное количество карточек
+  if (user.role === UserRole.ADMIN) {
+    return { canCreate: true, freeInterviewsLeft: Infinity, hasActiveSubscription: true };
   }
 
   const activeSubscriptions = user.subscriptions.filter(
@@ -51,6 +56,11 @@ export async function useInterview(userId: string): Promise<void> {
 
   if (!user) {
     throw new Error("Пользователь не найден");
+  }
+
+  // Админы не тратят собеседования
+  if (user.role === UserRole.ADMIN) {
+    return;
   }
 
   const hasActiveSubscription = user.subscriptions.some(
