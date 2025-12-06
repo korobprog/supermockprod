@@ -88,32 +88,5 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
   },
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   trustHost: true,
-  logger: {
-    error(code, metadata) {
-      // Подавляем логирование ошибок JWTSessionError для неавторизованных пользователей
-      // Это нормальная ситуация, когда пользователь не авторизован
-      const codeStr = typeof code === "string" ? code : code?.name || code?.code || String(code);
-      const errorMessage = 
-        metadata?.error?.message || 
-        metadata?.cause?.message || 
-        metadata?.message ||
-        (metadata?.error instanceof Error ? metadata.error.message : "") ||
-        "";
-      
-      // Проверяем различные варианты ошибки расшифровки JWT
-      const isJWTError = 
-        codeStr === "JWTSessionError" || 
-        codeStr?.includes("JWTSessionError") ||
-        errorMessage.includes("decryption secret") ||
-        errorMessage.includes("no matching decryption secret") ||
-        errorMessage.includes("JWTSessionError");
-      
-      if (isJWTError) {
-        return; // Подавляем логирование этой ошибки
-      }
-      // Для других ошибок используем стандартное логирование
-      console.error("[auth][error]", code, metadata);
-    },
-  },
 });
 
