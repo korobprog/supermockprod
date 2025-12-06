@@ -93,17 +93,22 @@ export async function initDB(): Promise<DataSource> {
 ensureInitialized();
 
 // Helper function to get repository by table name
-// Uses table name directly to avoid minification issues in production builds
-// In production, TypeORM classes are minified, so we must use table names
+// Uses entityMetadatas to find the correct entity class
+// This handles minification issues in production builds
 function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
   // Ensure dataSource is initialized
   if (!dataSource.isInitialized) {
     throw new Error("DataSource is not initialized. Call initDB() first.");
   }
   
-  // Always use table name to avoid minification issues
-  // TypeORM can resolve repositories by table name when entities are registered
-  return dataSource.getRepository(tableName) as Repository<T>;
+  // Find entity metadata by table name (works even with minified classes)
+  const metadata = dataSource.entityMetadatas.find(m => m.tableName === tableName);
+  if (!metadata) {
+    throw new Error(`Entity metadata not found for table: ${tableName}`);
+  }
+  
+  // Use the target from metadata (this is the actual entity class/constructor)
+  return dataSource.getRepository(metadata.target) as Repository<T>;
 }
 
 // Sync repository getters (for backwards compatibility)
