@@ -22,20 +22,18 @@ export default async function CardDetailPage({
       throw new Error("DataSource is not initialized");
     }
 
-    // Используем getRepository с явным указанием entity из tableToEntityMap
-    // Затем используем createQueryBuilder на репозитории
+    // Используем manager.createQueryBuilder с классом из tableToEntityMap
+    // Это альтернативный подход, который может лучше работать с минификацией
     const InterviewCardClass = tableToEntityMap["interview_cards"];
     if (!InterviewCardClass) {
       throw new Error("InterviewCard entity class not found in tableToEntityMap");
     }
-
-    const repo = dataSource.getRepository(InterviewCardClass);
     
-    // Используем QueryBuilder на репозитории для избежания проблем с минификацией
+    // Используем manager.createQueryBuilder для избежания проблем с минификацией
     let card;
     try {
-      card = await repo
-        .createQueryBuilder("card")
+      card = await dataSource.manager
+        .createQueryBuilder(InterviewCardClass, "card")
         .leftJoinAndSelect("card.user", "user")
         .leftJoinAndSelect("card.applications", "applications")
         .leftJoinAndSelect("applications.applicant", "applicant")
