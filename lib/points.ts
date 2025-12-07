@@ -35,7 +35,7 @@ export async function checkInterviewLimit(userId: string): Promise<{
   }
 
   const activeSubscriptions = user.subscriptions.filter(
-    (sub) => sub.status === SubscriptionStatus.ACTIVE && sub.endDate >= new Date()
+    (sub: any) => sub.status === SubscriptionStatus.ACTIVE && sub.endDate >= new Date()
   );
   const hasActiveSubscription = activeSubscriptions.length > 0;
   const freeInterviewsLeft = Math.max(0, FREE_INTERVIEWS_LIMIT - user.freeInterviewsUsed);
@@ -77,7 +77,7 @@ export async function useInterview(userId: string): Promise<void> {
     }
 
     const hasActiveSubscription = user.subscriptions.some(
-      (sub) => sub.status === SubscriptionStatus.ACTIVE && sub.endDate >= new Date()
+      (sub: any) => sub.status === SubscriptionStatus.ACTIVE && sub.endDate >= new Date()
     );
 
     // Если нет активной подписки, увеличиваем счетчик бесплатных собеседований
