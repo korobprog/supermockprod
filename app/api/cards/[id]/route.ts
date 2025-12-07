@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthApi, getCurrentUser } from "@/lib/auth-helpers";
-import { interviewCardRepository } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB } from "@/lib/db";
 import { z } from "zod";
 
 const updateCardSchema = z.object({
@@ -15,8 +15,11 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await initDB();
     const { id } = await params;
-    const repo = await interviewCardRepository();
+    const dataSource = getDataSource();
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const repo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
     const card = await repo
       .createQueryBuilder("card")
       .leftJoinAndSelect("card.user", "user")
@@ -51,11 +54,14 @@ export async function PATCH(
     if (authError) {
       return authError;
     }
+    await initDB();
     const user = await getCurrentUser();
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateCardSchema.parse(body);
-    const repo = await interviewCardRepository();
+    const dataSource = getDataSource();
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const repo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
     const card = await repo.findOne({
       where: { id },
     });
@@ -80,10 +86,12 @@ export async function PATCH(
     if (validatedData.status) card.status = validatedData.status as any;
 
     await repo.save(card);
-    const updatedCard = await repo.findOne({
-      where: { id },
-      relations: ["user"],
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const updatedCard = await repo
+      .createQueryBuilder("card")
+      .leftJoinAndSelect("card.user", "user")
+      .where("card.id = :id", { id })
+      .getOne();
 
     return NextResponse.json(updatedCard);
   } catch (error) {
@@ -111,9 +119,12 @@ export async function DELETE(
     if (authError) {
       return authError;
     }
+    await initDB();
     const user = await getCurrentUser();
     const { id } = await params;
-    const repo = await interviewCardRepository();
+    const dataSource = getDataSource();
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const repo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
     const card = await repo.findOne({
       where: { id },
     });
