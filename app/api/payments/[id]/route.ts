@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth-helpers";
-import { paymentRepository, userRepository, PaymentStatus } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB, userRepository, PaymentStatus } from "@/lib/db";
 import { z } from "zod";
 
 const updatePaymentSchema = z.object({
@@ -20,11 +20,15 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
     const validatedData = updatePaymentSchema.parse(body);
-    const paymentRepo = await paymentRepository();
-    const payment = await paymentRepo.findOne({
-      where: { id },
-      relations: ["user"],
-    });
+    await initDB();
+    const dataSource = getDataSource();
+    const paymentRepo = dataSource.getRepository(tableToEntityMap["payments"]);
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const payment = await paymentRepo
+      .createQueryBuilder("payment")
+      .leftJoinAndSelect("payment.user", "user")
+      .where("payment.id = :id", { id })
+      .getOne();
 
     if (!payment) {
       return NextResponse.json(
@@ -57,10 +61,12 @@ export async function PATCH(
     }
 
     await paymentRepo.save(payment);
-    const updatedPayment = await paymentRepo.findOne({
-      where: { id },
-      relations: ["user"],
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const updatedPayment = await paymentRepo
+      .createQueryBuilder("payment")
+      .leftJoinAndSelect("payment.user", "user")
+      .where("payment.id = :id", { id })
+      .getOne();
 
     return NextResponse.json(updatedPayment);
   } catch (error) {

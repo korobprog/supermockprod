@@ -1,5 +1,5 @@
 import { requireAuth } from "@/lib/auth-helpers";
-import { feedbackRepository } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
 
 // Отключаем статическую генерацию для этой страницы
@@ -7,17 +7,19 @@ export const dynamic = 'force-dynamic';
 
 export default async function FeedbackPage() {
   const user = await requireAuth();
-  const feedbackRepo = await feedbackRepository();
+  await initDB();
+  const dataSource = getDataSource();
+  const feedbackRepo = dataSource.getRepository(tableToEntityMap["feedbacks"]);
 
-  const feedbacks = await feedbackRepo.find({
-    where: {
-      toUserId: (user as any).id,
-    },
-    relations: ["fromUser", "application", "application.card"],
-    order: {
-      createdAt: "DESC",
-    },
-  });
+  // Используем QueryBuilder для избежания проблем с минификацией
+  const feedbacks = await feedbackRepo
+    .createQueryBuilder("feedback")
+    .leftJoinAndSelect("feedback.fromUser", "fromUser")
+    .leftJoinAndSelect("feedback.application", "application")
+    .leftJoinAndSelect("application.card", "card")
+    .where("feedback.toUserId = :userId", { userId: (user as any).id })
+    .orderBy("feedback.createdAt", "DESC")
+    .getMany();
 
   // Преобразуем TypeORM сущности в простые объекты
   const plainFeedbacks = JSON.parse(JSON.stringify(feedbacks));

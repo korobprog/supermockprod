@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthApi, getCurrentUser } from "@/lib/auth-helpers";
-import { paymentRepository, PaymentStatus } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB, PaymentStatus } from "@/lib/db";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
@@ -17,7 +17,9 @@ export async function POST(request: Request) {
     const user = await getCurrentUser();
     const body = await request.json();
     const validatedData = createPaymentSchema.parse(body);
-    const paymentRepo = await paymentRepository();
+    await initDB();
+    const dataSource = getDataSource();
+    const paymentRepo = dataSource.getRepository(tableToEntityMap["payments"]);
 
     const payment = paymentRepo.create({
       id: randomUUID(),
@@ -27,10 +29,12 @@ export async function POST(request: Request) {
     });
 
     await paymentRepo.save(payment);
-    const savedPayment = await paymentRepo.findOne({
-      where: { id: payment.id },
-      relations: ["user"],
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const savedPayment = await paymentRepo
+      .createQueryBuilder("payment")
+      .leftJoinAndSelect("payment.user", "user")
+      .where("payment.id = :id", { id: payment.id })
+      .getOne();
 
     return NextResponse.json(savedPayment, { status: 201 });
   } catch (error) {
@@ -59,7 +63,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
-    const paymentRepo = await paymentRepository();
+    await initDB();
+    const dataSource = getDataSource();
+    const paymentRepo = dataSource.getRepository(tableToEntityMap["payments"]);
 
     let query = paymentRepo.createQueryBuilder("payment")
       .leftJoinAndSelect("payment.user", "user")

@@ -1,5 +1,5 @@
 import { requireAdmin, isVirtualAdmin } from "@/lib/auth-helpers";
-import { paymentRepository, userRepository, interviewCardRepository, applicationRepository, PaymentStatus } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB, userRepository, interviewCardRepository, applicationRepository, PaymentStatus } from "@/lib/db";
 import { Navbar } from "@/components/navbar";
 import { AdminPanel } from "@/components/admin-panel";
 
@@ -27,17 +27,19 @@ export default async function AdminPage() {
     plainPayments = [];
   } else {
     // Для обычного админа загружаем данные из БД
-    const paymentRepo = await paymentRepository();
+    await initDB();
+    const dataSource = getDataSource();
+    const paymentRepo = dataSource.getRepository(tableToEntityMap["payments"]);
     const userRepo = await userRepository();
     const cardRepo = await interviewCardRepository();
     const appRepo = await applicationRepository();
 
-    const payments = await paymentRepo.find({
-      relations: ["user"],
-      order: {
-        createdAt: "DESC",
-      },
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const payments = await paymentRepo
+      .createQueryBuilder("payment")
+      .leftJoinAndSelect("payment.user", "user")
+      .orderBy("payment.createdAt", "DESC")
+      .getMany();
 
     stats = {
       totalUsers: await userRepo.count(),
