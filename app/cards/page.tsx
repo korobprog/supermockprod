@@ -1,4 +1,4 @@
-import { initDB, InterviewCard, getRepositorySafe } from "@/lib/db";
+import { initDB, InterviewCard, getDataSource } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { Navbar } from "@/components/navbar";
 import Link from "next/link";
@@ -20,10 +20,13 @@ export default async function CardsPage({
     const techStackFilter = params.techStack;
     const statusFilter = params.status;
 
-    // Используем getRepositorySafe для избежания проблем с минификацией
-    const cardRepo = getRepositorySafe(InterviewCard, "interview_cards");
-    let query = cardRepo
-      .createQueryBuilder("card")
+    // Используем DataSource.createQueryBuilder с явным указанием entity класса
+    // Это обходит проблему с минификацией, так как используем оригинальный класс
+    const dataSource = getDataSource();
+    let query = dataSource
+      .createQueryBuilder()
+      .select("card")
+      .from(InterviewCard, "card")
       .leftJoinAndSelect("card.user", "user")
       .leftJoinAndSelect("card.applications", "applications")
       .orderBy("card.createdAt", "DESC");
@@ -55,9 +58,21 @@ export default async function CardsPage({
     // Получаем все уникальные технологии для фильтра
     let allTechStack: string[] = [];
     try {
-      const allCards = await cardRepo.find({
-        select: ["techStack"],
-      });
+      const allCards = await dataSource
+        .createQueryBuilder()
+        .select("card.techStack", "techStack")
+        .from(InterviewCard, "card")
+        .getRawMany();
+      
+      // Преобразуем raw результаты в массив строк
+      allTechStack = Array.from(
+        new Set(
+          allCards
+            .map((card: any) => card.techStack)
+            .filter((tech: any) => tech)
+            .flatMap((tech: string) => tech.split(",").map((t: string) => t.trim()))
+        )
+      ).sort();
 
       allTechStack = Array.from(
         new Set(allCards.flatMap((card) => card.techStack || []))
