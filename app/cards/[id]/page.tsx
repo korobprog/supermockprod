@@ -17,12 +17,19 @@ export default async function CardDetailPage({
     const { id } = await params;
     const user = await getCurrentUser(); // Не требует авторизации, возвращает null если не авторизован
 
+    // Используем tableToEntityMap для получения оригинального класса (не минифицированного)
+    // Это критически важно для production build с минификацией
+    const InterviewCardClass = tableToEntityMap["interview_cards"];
+    if (!InterviewCardClass) {
+      throw new Error("InterviewCard entity class not found in tableToEntityMap");
+    }
+
     const dataSource = getDataSource();
-    // Используем getRepository с явным указанием entity из tableToEntityMap
-    const repo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
-    // Используем QueryBuilder для избежания проблем с минификацией
-    const card = await repo
-      .createQueryBuilder("card")
+    // Используем createQueryBuilder напрямую с from() для избежания проблем с минификацией
+    const card = await dataSource
+      .createQueryBuilder()
+      .select("card")
+      .from(InterviewCardClass, "card")
       .leftJoinAndSelect("card.user", "user")
       .leftJoinAndSelect("card.applications", "applications")
       .leftJoinAndSelect("applications.applicant", "applicant")
