@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser, requireAuthApi, isVirtualAdmin, VIRTUAL_ADMIN_ID } from "@/lib/auth-helpers";
-import { userRepository } from "@/lib/db";
+import { getRepositorySafe, User, initDB } from "@/lib/db";
 import { z } from "zod";
 
 const updateProfileSchema = z.object({
@@ -38,24 +38,15 @@ export async function GET() {
             });
         }
 
-        const userRepo = await userRepository();
-
-        // Используем QueryBuilder для избежания проблем с минификацией
-        const user = await userRepo
-            .createQueryBuilder("user")
-            .select([
-                "user.id",
-                "user.email",
-                "user.name",
-                "user.telegram",
-                "user.discord",
-                "user.whatsapp",
-                "user.role",
-                "user.points",
-                "user.createdAt"
-            ])
-            .where("user.id = :id", { id: currentUser.id })
-            .getOne();
+        await initDB();
+        // Используем getRepositorySafe для избежания проблем с минификацией
+        const userRepo = getRepositorySafe(User, "users");
+        
+        // Используем findOne с select - это безопасно, так как select не использует relations
+        const user = await userRepo.findOne({
+            where: { id: currentUser.id },
+            select: ["id", "email", "name", "telegram", "discord", "whatsapp", "role", "points", "createdAt"],
+        });
 
         if (!user) {
             return NextResponse.json(
@@ -104,13 +95,13 @@ export async function PATCH(req: NextRequest) {
             });
         }
 
-        const userRepo = await userRepository();
-
-        // Используем QueryBuilder для избежания проблем с минификацией
-        const user = await userRepo
-            .createQueryBuilder("user")
-            .where("user.id = :id", { id: currentUser.id })
-            .getOne();
+        await initDB();
+        // Используем getRepositorySafe для избежания проблем с минификацией
+        const userRepo = getRepositorySafe(User, "users");
+        
+        const user = await userRepo.findOne({
+            where: { id: currentUser.id },
+        });
 
         if (!user) {
             return NextResponse.json(
