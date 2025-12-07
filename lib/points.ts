@@ -16,10 +16,12 @@ export async function checkInterviewLimit(userId: string): Promise<{
 
   await initDB();
   const userRepo = await userRepository();
-  const user = await userRepo.findOne({
-    where: { id: userId },
-    relations: ["subscriptions"],
-  });
+  // Используем QueryBuilder для избежания проблем с минификацией
+  const user = await userRepo
+    .createQueryBuilder("user")
+    .leftJoinAndSelect("user.subscriptions", "subscriptions")
+    .where("user.id = :userId", { userId })
+    .getOne();
 
   if (!user) {
     return { canCreate: false, freeInterviewsLeft: 0, hasActiveSubscription: false };
@@ -51,10 +53,12 @@ export async function useInterview(userId: string): Promise<void> {
   try {
     await initDB();
     const userRepo = await userRepository();
-    const user = await userRepo.findOne({
-      where: { id: userId },
-      relations: ["subscriptions"],
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const user = await userRepo
+      .createQueryBuilder("user")
+      .leftJoinAndSelect("user.subscriptions", "subscriptions")
+      .where("user.id = :userId", { userId })
+      .getOne();
 
     if (!user) {
       // Если пользователь не найден, просто логируем и возвращаемся

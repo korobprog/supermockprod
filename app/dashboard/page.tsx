@@ -26,10 +26,16 @@ export default async function DashboardPage() {
     // UUID формат: 8-4-4-4-12 символов
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (userId && uuidRegex.test(userId)) {
-      userData = await userRepo.findOne({
-        where: { id: userId },
-        relations: ["interviewCards", "applications", "applications.card", "applications.card.user", "subscriptions"],
-      });
+      // Используем QueryBuilder для избежания проблем с минификацией
+      userData = await userRepo
+        .createQueryBuilder("user")
+        .leftJoinAndSelect("user.interviewCards", "interviewCards")
+        .leftJoinAndSelect("user.applications", "applications")
+        .leftJoinAndSelect("applications.card", "card")
+        .leftJoinAndSelect("card.user", "cardUser")
+        .leftJoinAndSelect("user.subscriptions", "subscriptions")
+        .where("user.id = :userId", { userId })
+        .getOne();
     }
   }
 

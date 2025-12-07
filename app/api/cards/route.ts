@@ -87,10 +87,12 @@ export async function POST(request: Request) {
     });
 
     await cardRepo.save(card);
-    const savedCard = await cardRepo.findOne({
-      where: { id: card.id },
-      relations: ["user"],
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const savedCard = await cardRepo
+      .createQueryBuilder("card")
+      .leftJoinAndSelect("card.user", "user")
+      .where("card.id = :id", { id: card.id })
+      .getOne();
 
     // Используем одно собеседование (не блокируем создание карточки при ошибке)
     try {

@@ -40,10 +40,22 @@ export async function GET() {
 
         const userRepo = await userRepository();
 
-        const user = await userRepo.findOne({
-            where: { id: currentUser.id },
-            select: ["id", "email", "name", "telegram", "discord", "whatsapp", "role", "points", "createdAt"],
-        });
+        // Используем QueryBuilder для избежания проблем с минификацией
+        const user = await userRepo
+            .createQueryBuilder("user")
+            .select([
+                "user.id",
+                "user.email",
+                "user.name",
+                "user.telegram",
+                "user.discord",
+                "user.whatsapp",
+                "user.role",
+                "user.points",
+                "user.createdAt"
+            ])
+            .where("user.id = :id", { id: currentUser.id })
+            .getOne();
 
         if (!user) {
             return NextResponse.json(
@@ -94,9 +106,11 @@ export async function PATCH(req: NextRequest) {
 
         const userRepo = await userRepository();
 
-        const user = await userRepo.findOne({
-            where: { id: currentUser.id },
-        });
+        // Используем QueryBuilder для избежания проблем с минификацией
+        const user = await userRepo
+            .createQueryBuilder("user")
+            .where("user.id = :id", { id: currentUser.id })
+            .getOne();
 
         if (!user) {
             return NextResponse.json(
