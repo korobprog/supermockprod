@@ -22,18 +22,28 @@ export default async function CardDetailPage({
       throw new Error("DataSource is not initialized");
     }
 
-    // Используем manager.createQueryBuilder с классом из tableToEntityMap
-    // Это альтернативный подход, который может лучше работать с минификацией
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    // Это тот же подход, что используется в app/api/cards/route.ts и app/api/cards/[id]/route.ts
+    // Если это не работает, возможно проблема в том, что нужно использовать метаданные напрямую
     const InterviewCardClass = tableToEntityMap["interview_cards"];
     if (!InterviewCardClass) {
       throw new Error("InterviewCard entity class not found in tableToEntityMap");
     }
     
-    // Используем manager.createQueryBuilder для избежания проблем с минификацией
+    // Получаем метаданные напрямую через имя таблицы
+    const metadata = dataSource.entityMetadatas.find(m => m.tableName === "interview_cards");
+    if (!metadata) {
+      throw new Error(`Metadata not found for table: interview_cards. Available tables: ${dataSource.entityMetadatas.map(m => m.tableName).join(", ")}`);
+    }
+    
+    // Используем репозиторий с метаданными
+    const repo = dataSource.getRepository(metadata.target);
+    
+    // Используем QueryBuilder на репозитории для избежания проблем с минификацией
     let card;
     try {
-      card = await dataSource.manager
-        .createQueryBuilder(InterviewCardClass, "card")
+      card = await repo
+        .createQueryBuilder("card")
         .leftJoinAndSelect("card.user", "user")
         .leftJoinAndSelect("card.applications", "applications")
         .leftJoinAndSelect("applications.applicant", "applicant")
