@@ -17,25 +17,19 @@ export default async function CardDetailPage({
     const { id } = await params;
     const user = await getCurrentUser(); // Не требует авторизации, возвращает null если не авторизован
 
-    // Используем tableToEntityMap для получения оригинального класса (не минифицированного)
-    // Это критически важно для production build с минификацией
-    const InterviewCardClass = tableToEntityMap["interview_cards"];
-    if (!InterviewCardClass) {
-      throw new Error("InterviewCard entity class not found in tableToEntityMap");
-    }
-
     const dataSource = getDataSource();
     if (!dataSource.isInitialized) {
       throw new Error("DataSource is not initialized");
     }
 
-    // Используем createQueryBuilder напрямую с from() для избежания проблем с минификацией
+    // Используем getRepository с явным указанием entity из tableToEntityMap (как в API route)
+    const repo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
+    
+    // Используем QueryBuilder для избежания проблем с минификацией
     let card;
     try {
-      card = await dataSource
-        .createQueryBuilder()
-        .select("card")
-        .from(InterviewCardClass, "card")
+      card = await repo
+        .createQueryBuilder("card")
         .leftJoinAndSelect("card.user", "user")
         .leftJoinAndSelect("card.applications", "applications")
         .leftJoinAndSelect("applications.applicant", "applicant")
@@ -43,7 +37,7 @@ export default async function CardDetailPage({
         .getOne();
     } catch (queryError) {
       console.error("Query error:", queryError);
-      console.error("Query error details:", JSON.stringify(queryError, Object.getOwnPropertyNames(queryError)));
+      console.error("Query error details:", JSON.stringify(queryError, Object.getOwnPropertyNames(queryError))));
       throw queryError;
     }
 
