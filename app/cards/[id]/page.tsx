@@ -25,16 +25,27 @@ export default async function CardDetailPage({
     }
 
     const dataSource = getDataSource();
+    if (!dataSource.isInitialized) {
+      throw new Error("DataSource is not initialized");
+    }
+
     // Используем createQueryBuilder напрямую с from() для избежания проблем с минификацией
-    const card = await dataSource
-      .createQueryBuilder()
-      .select("card")
-      .from(InterviewCardClass, "card")
-      .leftJoinAndSelect("card.user", "user")
-      .leftJoinAndSelect("card.applications", "applications")
-      .leftJoinAndSelect("applications.applicant", "applicant")
-      .where("card.id = :id", { id })
-      .getOne();
+    let card;
+    try {
+      card = await dataSource
+        .createQueryBuilder()
+        .select("card")
+        .from(InterviewCardClass, "card")
+        .leftJoinAndSelect("card.user", "user")
+        .leftJoinAndSelect("card.applications", "applications")
+        .leftJoinAndSelect("applications.applicant", "applicant")
+        .where("card.id = :id", { id })
+        .getOne();
+    } catch (queryError) {
+      console.error("Query error:", queryError);
+      console.error("Query error details:", JSON.stringify(queryError, Object.getOwnPropertyNames(queryError)));
+      throw queryError;
+    }
 
     if (!card) {
       notFound();
@@ -66,6 +77,8 @@ export default async function CardDetailPage({
     console.error("Error in CardDetailPage:", error);
     console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
     console.error("Error details:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    console.error("Error name:", error instanceof Error ? error.name : "Unknown");
+    console.error("Error message:", error instanceof Error ? error.message : String(error));
     
     // Return error page instead of crashing
     return (
@@ -79,7 +92,10 @@ export default async function CardDetailPage({
             <p className="text-red-300">
               Произошла ошибка при загрузке карточки собеседования. Пожалуйста, попробуйте обновить страницу.
             </p>
-            {(process.env.NODE_ENV === "development" || process.env.NODE_ENV !== "production") && (
+            <p className="text-red-300 mt-2 text-sm">
+              {error instanceof Error ? error.message : String(error)}
+            </p>
+            {process.env.NODE_ENV === "development" && (
               <pre className="mt-4 text-xs text-red-200 overflow-auto">
                 {error instanceof Error ? error.message : String(error)}
                 {error instanceof Error && error.stack && (
