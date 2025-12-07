@@ -27,7 +27,7 @@ export function CardList({ cards }: CardListProps) {
   if (cards.length === 0) {
     return (
       <div className="glass rounded-2xl border border-white/10 p-8 text-center">
-        <p className="text-slate-500">Карточки не найдены</p>
+        <p className="text-slate-500">Нет предложений</p>
       </div>
     );
   }

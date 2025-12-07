@@ -28,6 +28,10 @@ export default async function CardsPage({
     }
 
     const dataSource = getDataSource();
+    if (!dataSource.isInitialized) {
+      throw new Error("DataSource is not initialized");
+    }
+    
     let query = dataSource
       .createQueryBuilder()
       .select("card")
@@ -70,6 +74,7 @@ export default async function CardsPage({
         .getRawMany();
       
       // Преобразуем raw результаты в массив строк
+      // techStack хранится как simple-array (строка с запятыми)
       allTechStack = Array.from(
         new Set(
           allCards
@@ -77,10 +82,6 @@ export default async function CardsPage({
             .filter((tech: any) => tech)
             .flatMap((tech: string) => tech.split(",").map((t: string) => t.trim()))
         )
-      ).sort();
-
-      allTechStack = Array.from(
-        new Set(allCards.flatMap((card) => card.techStack || []))
       ).sort();
     } catch (error) {
       console.error("Error fetching tech stack for filters:", error);
