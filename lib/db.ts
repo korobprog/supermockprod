@@ -94,7 +94,7 @@ ensureInitialized();
 
 // Map table names to original entity classes
 // This avoids minification issues in production builds
-const tableToEntityMap: Record<string, any> = {
+export const tableToEntityMap: Record<string, any> = {
   "users": User,
   "interview_cards": InterviewCard,
   "applications": Application,

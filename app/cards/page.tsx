@@ -1,4 +1,4 @@
-import { initDB, InterviewCard, getDataSource } from "@/lib/db";
+import { initDB, getDataSource, tableToEntityMap } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { Navbar } from "@/components/navbar";
 import Link from "next/link";
@@ -20,13 +20,18 @@ export default async function CardsPage({
     const techStackFilter = params.techStack;
     const statusFilter = params.status;
 
-    // Используем DataSource.createQueryBuilder с явным указанием entity класса
-    // Это обходит проблему с минификацией, так как используем оригинальный класс
+    // Используем tableToEntityMap для получения оригинального класса (не минифицированного)
+    // Это критически важно для production build с минификацией
+    const InterviewCardClass = tableToEntityMap["interview_cards"];
+    if (!InterviewCardClass) {
+      throw new Error("InterviewCard entity class not found in tableToEntityMap");
+    }
+
     const dataSource = getDataSource();
     let query = dataSource
       .createQueryBuilder()
       .select("card")
-      .from(InterviewCard, "card")
+      .from(InterviewCardClass, "card")
       .leftJoinAndSelect("card.user", "user")
       .leftJoinAndSelect("card.applications", "applications")
       .orderBy("card.createdAt", "DESC");
@@ -61,7 +66,7 @@ export default async function CardsPage({
       const allCards = await dataSource
         .createQueryBuilder()
         .select("card.techStack", "techStack")
-        .from(InterviewCard, "card")
+        .from(InterviewCardClass, "card")
         .getRawMany();
       
       // Преобразуем raw результаты в массив строк
