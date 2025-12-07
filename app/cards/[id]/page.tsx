@@ -35,7 +35,7 @@ export default async function CardDetailPage({
 
     const currentUserId = user ? (user as any).id : null;
     const isOwner = currentUserId ? card.userId === currentUserId : false;
-    const hasApplication = currentUserId ? card.applications.some(
+    const hasApplication = currentUserId && card.applications ? card.applications.some(
       (app: any) => app.applicantId === currentUserId
     ) : false;
 
