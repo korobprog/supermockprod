@@ -1,4 +1,4 @@
-import { getDataSource, tableToEntityMap, applicationRepository, SubscriptionStatus, initDB, UserRole } from "./db";
+import { getDataSource, tableToEntityMap, SubscriptionStatus, initDB, UserRole } from "./db";
 import { isVirtualAdmin } from "./auth-helpers";
 
 const FREE_INTERVIEWS_LIMIT = 3;
@@ -106,11 +106,16 @@ export async function awardPoints(userId: string, amount: number = POINTS_PER_IN
 }
 
 export async function awardPointsForCompletedInterview(applicationId: string): Promise<void> {
-  const appRepo = await applicationRepository();
-  const application = await appRepo.findOne({
-    where: { id: applicationId },
-    relations: ["card", "feedbacks"],
-  });
+  await initDB();
+  const dataSource = getDataSource();
+  const appRepo = dataSource.getRepository(tableToEntityMap["applications"]);
+  // Используем QueryBuilder для избежания проблем с минификацией
+  const application = await appRepo
+    .createQueryBuilder("application")
+    .leftJoinAndSelect("application.card", "card")
+    .leftJoinAndSelect("application.feedbacks", "feedbacks")
+    .where("application.id = :id", { id: applicationId })
+    .getOne();
 
   if (!application || application.status !== "COMPLETED") {
     return;

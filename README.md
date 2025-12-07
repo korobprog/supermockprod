@@ -15,7 +15,7 @@
 
 - Next.js 15 (App Router)
 - TypeScript
-- Prisma ORM
+- TypeORM
 - PostgreSQL
 - NextAuth.js
 - Tailwind CSS
@@ -48,17 +48,7 @@ ADMIN_PASS=admin123
 NODE_ENV=development
 ```
 
-4. Сгенерируйте Prisma Client:
-```bash
-pnpm prisma generate
-```
-
-5. Примените миграции:
-```bash
-pnpm prisma db push
-```
-
-6. Запустите dev сервер:
+4. Запустите dev сервер:
 ```bash
 pnpm dev
 ```
@@ -105,16 +95,14 @@ pnpm create:admin existing@example.com
 UPDATE "users" SET role = 'ADMIN' WHERE email = 'your-email@example.com';
 ```
 
-### Способ 4: Через Prisma Studio
+### Способ 4: Через SQL напрямую
 
-1. Запустите Prisma Studio:
-```bash
-pnpm prisma studio
+1. Подключитесь к базе данных через psql или другой клиент
+2. Найдите пользователя в таблице `users`
+3. Измените поле `role` на `ADMIN`:
+```sql
+UPDATE "users" SET role = 'ADMIN' WHERE email = 'your-email@example.com';
 ```
-
-2. Найдите пользователя в таблице `User`
-3. Измените поле `role` на `ADMIN`
-4. Сохраните изменения
 
 ### Вход в админ панель
 
@@ -127,6 +115,7 @@ pnpm prisma studio
 
 - `app/` - Next.js App Router страницы и API routes
 - `components/` - React компоненты
-- `lib/` - Утилиты, Prisma client, аутентификация
-- `prisma/` - Prisma схема и миграции
+- `lib/` - Утилиты, TypeORM, аутентификация
+- `src/entities/` - TypeORM сущности
+- `src/data-source.ts` - TypeORM DataSource конфигурация
 

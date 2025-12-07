@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthApi, getCurrentUser } from "@/lib/auth-helpers";
-import { applicationRepository, feedbackRepository } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB, feedbackRepository } from "@/lib/db";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
@@ -21,11 +21,15 @@ export async function POST(request: Request) {
     const validatedData = createFeedbackSchema.parse(body);
 
     // Проверяем существование заявки
-    const appRepo = await applicationRepository();
-    const application = await appRepo.findOne({
-      where: { id: validatedData.applicationId },
-      relations: ["card"],
-    });
+    await initDB();
+    const dataSource = getDataSource();
+    const appRepo = dataSource.getRepository(tableToEntityMap["applications"]);
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const application = await appRepo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.card", "card")
+      .where("application.id = :id", { id: validatedData.applicationId })
+      .getOne();
 
     if (!application) {
       return NextResponse.json(
@@ -86,10 +90,15 @@ export async function POST(request: Request) {
     });
 
     await feedbackRepo.save(feedback);
-    const savedFeedback = await feedbackRepo.findOne({
-      where: { id: feedback.id },
-      relations: ["fromUser", "toUser", "application", "application.card"],
-    });
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const savedFeedback = await feedbackRepo
+      .createQueryBuilder("feedback")
+      .leftJoinAndSelect("feedback.fromUser", "fromUser")
+      .leftJoinAndSelect("feedback.toUser", "toUser")
+      .leftJoinAndSelect("feedback.application", "application")
+      .leftJoinAndSelect("application.card", "card")
+      .where("feedback.id = :id", { id: feedback.id })
+      .getOne();
 
     // Проверяем, можно ли начислить баллы (оба фидбека оставлены)
     const { awardPointsForCompletedInterview } = await import("@/lib/points");

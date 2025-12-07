@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthApi, getCurrentUser } from "@/lib/auth-helpers";
-import { applicationRepository, ApplicationStatus } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB, ApplicationStatus } from "@/lib/db";
 
 export async function GET(
   request: Request,
@@ -8,7 +8,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const appRepo = await applicationRepository();
+    await initDB();
+    const dataSource = getDataSource();
+    const appRepo = dataSource.getRepository(tableToEntityMap["applications"]);
     const application = await appRepo
       .createQueryBuilder("application")
       .leftJoinAndSelect("application.card", "card")
@@ -54,11 +56,15 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
     const validatedData = updateApplicationSchema.parse(body);
-    const appRepo = await applicationRepository();
-    const application = await appRepo.findOne({
-      where: { id },
-      relations: ["card"],
-    });
+    await initDB();
+    const dataSource = getDataSource();
+    const appRepo = dataSource.getRepository(tableToEntityMap["applications"]);
+    // Используем QueryBuilder для избежания проблем с минификацией
+    const application = await appRepo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.card", "card")
+      .where("application.id = :id", { id })
+      .getOne();
 
     if (!application) {
       return NextResponse.json(
