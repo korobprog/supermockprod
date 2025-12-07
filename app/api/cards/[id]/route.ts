@@ -17,10 +17,13 @@ export async function GET(
   try {
     const { id } = await params;
     const repo = await interviewCardRepository();
-    const card = await repo.findOne({
-      where: { id },
-      relations: ["user", "applications", "applications.applicant"],
-    });
+    const card = await repo
+      .createQueryBuilder("card")
+      .leftJoinAndSelect("card.user", "user")
+      .leftJoinAndSelect("card.applications", "applications")
+      .leftJoinAndSelect("applications.applicant", "applicant")
+      .where("card.id = :id", { id })
+      .getOne();
 
     if (!card) {
       return NextResponse.json(

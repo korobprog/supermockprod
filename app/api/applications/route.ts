@@ -77,10 +77,13 @@ export async function POST(request: Request) {
     card.status = CardStatus.IN_PROGRESS;
     await cardRepo.save(card);
 
-    const savedApplication = await appRepo.findOne({
-      where: { id: application.id },
-      relations: ["card", "card.user", "applicant"],
-    });
+    const savedApplication = await appRepo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.card", "card")
+      .leftJoinAndSelect("card.user", "user")
+      .leftJoinAndSelect("application.applicant", "applicant")
+      .where("application.id = :id", { id: application.id })
+      .getOne();
 
     return NextResponse.json(savedApplication, { status: 201 });
   } catch (error) {

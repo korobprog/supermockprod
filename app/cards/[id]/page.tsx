@@ -17,10 +17,14 @@ export default async function CardDetailPage({
   const user = await getCurrentUser(); // Не требует авторизации, возвращает null если не авторизован
 
   const repo = await interviewCardRepository();
-  const card = await repo.findOne({
-    where: { id },
-    relations: ["user", "applications", "applications.applicant"],
-  });
+  // Используем QueryBuilder для избежания проблем с минификацией
+  const card = await repo
+    .createQueryBuilder("card")
+    .leftJoinAndSelect("card.user", "user")
+    .leftJoinAndSelect("card.applications", "applications")
+    .leftJoinAndSelect("applications.applicant", "applicant")
+    .where("card.id = :id", { id })
+    .getOne();
 
   if (!card) {
     notFound();

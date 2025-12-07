@@ -9,10 +9,13 @@ export async function GET(
   try {
     const { id } = await params;
     const appRepo = await applicationRepository();
-    const application = await appRepo.findOne({
-      where: { id },
-      relations: ["card", "card.user", "applicant"],
-    });
+    const application = await appRepo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.card", "card")
+      .leftJoinAndSelect("card.user", "user")
+      .leftJoinAndSelect("application.applicant", "applicant")
+      .where("application.id = :id", { id })
+      .getOne();
 
     if (!application) {
       return NextResponse.json(
@@ -92,10 +95,13 @@ export async function PATCH(
     }
 
     await appRepo.save(application);
-    const updatedApplication = await appRepo.findOne({
-      where: { id },
-      relations: ["card", "card.user", "applicant"],
-    });
+    const updatedApplication = await appRepo
+      .createQueryBuilder("application")
+      .leftJoinAndSelect("application.card", "card")
+      .leftJoinAndSelect("card.user", "user")
+      .leftJoinAndSelect("application.applicant", "applicant")
+      .where("application.id = :id", { id })
+      .getOne();
 
     return NextResponse.json(updatedApplication);
   } catch (error) {
