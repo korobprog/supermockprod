@@ -1,4 +1,4 @@
-import { userRepository, applicationRepository, SubscriptionStatus, initDB, UserRole } from "./db";
+import { getDataSource, tableToEntityMap, applicationRepository, SubscriptionStatus, initDB, UserRole } from "./db";
 import { isVirtualAdmin } from "./auth-helpers";
 
 const FREE_INTERVIEWS_LIMIT = 3;
@@ -15,7 +15,9 @@ export async function checkInterviewLimit(userId: string): Promise<{
   }
 
   await initDB();
-  const userRepo = await userRepository();
+  const dataSource = getDataSource();
+  // Используем getRepository с явным указанием entity из tableToEntityMap
+  const userRepo = dataSource.getRepository(tableToEntityMap["users"]);
   // Используем QueryBuilder для избежания проблем с минификацией
   const user = await userRepo
     .createQueryBuilder("user")
@@ -52,7 +54,9 @@ export async function useInterview(userId: string): Promise<void> {
 
   try {
     await initDB();
-    const userRepo = await userRepository();
+    const dataSource = getDataSource();
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const userRepo = dataSource.getRepository(tableToEntityMap["users"]);
     // Используем QueryBuilder для избежания проблем с минификацией
     const user = await userRepo
       .createQueryBuilder("user")
@@ -79,6 +83,8 @@ export async function useInterview(userId: string): Promise<void> {
     // Если нет активной подписки, увеличиваем счетчик бесплатных собеседований
     if (!hasActiveSubscription) {
       user.freeInterviewsUsed += 1;
+      const dataSource = getDataSource();
+      const userRepo = dataSource.getRepository(tableToEntityMap["users"]);
       await userRepo.save(user);
     }
   } catch (error) {
@@ -89,7 +95,9 @@ export async function useInterview(userId: string): Promise<void> {
 }
 
 export async function awardPoints(userId: string, amount: number = POINTS_PER_INTERVIEW): Promise<void> {
-  const userRepo = await userRepository();
+  await initDB();
+  const dataSource = getDataSource();
+  const userRepo = dataSource.getRepository(tableToEntityMap["users"]);
   const user = await userRepo.findOne({ where: { id: userId } });
   if (user) {
     user.points += amount;
