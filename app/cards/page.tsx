@@ -32,10 +32,10 @@ export default async function CardsPage({
       throw new Error("DataSource is not initialized");
     }
     
-    let query = dataSource
-      .createQueryBuilder()
-      .select("card")
-      .from(InterviewCardClass, "card")
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const cardRepo = dataSource.getRepository(InterviewCardClass);
+    let query = cardRepo
+      .createQueryBuilder("card")
       .leftJoinAndSelect("card.user", "user")
       .leftJoinAndSelect("card.applications", "applications")
       .orderBy("card.createdAt", "DESC");
@@ -67,10 +67,9 @@ export default async function CardsPage({
     // Получаем все уникальные технологии для фильтра
     let allTechStack: string[] = [];
     try {
-      const allCards = await dataSource
-        .createQueryBuilder()
+      const allCards = await cardRepo
+        .createQueryBuilder("card")
         .select("card.techStack", "techStack")
-        .from(InterviewCardClass, "card")
         .getRawMany();
       
       // Преобразуем raw результаты в массив строк
