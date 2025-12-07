@@ -47,14 +47,14 @@ export async function GET() {
             where: { id: currentUser.id },
             select: ["id", "email", "name", "telegram", "discord", "whatsapp", "role", "points", "createdAt"],
         });
-
+        
         if (!user) {
             return NextResponse.json(
                 { error: "Пользователь не найден" },
                 { status: 404 }
             );
         }
-
+        
         return NextResponse.json(user);
     } catch (error) {
         console.error("Error fetching profile:", error);
