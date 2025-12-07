@@ -28,7 +28,7 @@ function createDataSource(): DataSource {
 }
 
 // Get or create the DataSource
-function getDataSource(): DataSource {
+export function getDataSource(): DataSource {
   if (!globalForTypeORM.dataSource) {
     globalForTypeORM.dataSource = createDataSource();
   }
