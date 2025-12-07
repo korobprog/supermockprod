@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuthApi, getCurrentUser } from "@/lib/auth-helpers";
-import { interviewCardRepository, CardStatus } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB, CardStatus } from "@/lib/db";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 
@@ -12,11 +12,14 @@ const createCardSchema = z.object({
 
 export async function GET(request: Request) {
   try {
+    await initDB();
     const { searchParams } = new URL(request.url);
     const techStackFilter = searchParams.get("techStack");
     const statusFilter = searchParams.get("status");
 
-    const cardRepo = await interviewCardRepository();
+    const dataSource = getDataSource();
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const cardRepo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
     let query = cardRepo.createQueryBuilder("card")
       .leftJoinAndSelect("card.user", "user")
       .leftJoinAndSelect("card.applications", "applications")
@@ -77,7 +80,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const cardRepo = await interviewCardRepository();
+    await initDB();
+    const dataSource = getDataSource();
+    // Используем getRepository с явным указанием entity из tableToEntityMap
+    const cardRepo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
     const card = cardRepo.create({
       id: randomUUID(),
       userId: (user as any).id,

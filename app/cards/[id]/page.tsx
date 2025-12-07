@@ -1,4 +1,4 @@
-import { interviewCardRepository, initDB } from "@/lib/db";
+import { getDataSource, tableToEntityMap, initDB } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { Navbar } from "@/components/navbar";
 import { CardDetails } from "@/components/card-details";
@@ -16,7 +16,9 @@ export default async function CardDetailPage({
   const { id } = await params;
   const user = await getCurrentUser(); // Не требует авторизации, возвращает null если не авторизован
 
-  const repo = await interviewCardRepository();
+  const dataSource = getDataSource();
+  // Используем getRepository с явным указанием entity из tableToEntityMap
+  const repo = dataSource.getRepository(tableToEntityMap["interview_cards"]);
   // Используем QueryBuilder для избежания проблем с минификацией
   const card = await repo
     .createQueryBuilder("card")
