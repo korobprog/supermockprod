@@ -1,4 +1,4 @@
-import { initDB, InterviewCard, getDataSource } from "@/lib/db";
+import { initDB, InterviewCard, getRepositorySafe } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth-helpers";
 import { Navbar } from "@/components/navbar";
 import Link from "next/link";
@@ -20,10 +20,9 @@ export default async function CardsPage({
     const techStackFilter = params.techStack;
     const statusFilter = params.status;
 
-    // Используем DataSource напрямую для избежания проблем с минификацией
-    const dataSource = getDataSource();
-    let query = dataSource
-      .getRepository(InterviewCard)
+    // Используем getRepositorySafe для избежания проблем с минификацией
+    const cardRepo = getRepositorySafe(InterviewCard, "interview_cards");
+    let query = cardRepo
       .createQueryBuilder("card")
       .leftJoinAndSelect("card.user", "user")
       .leftJoinAndSelect("card.applications", "applications")
@@ -56,11 +55,9 @@ export default async function CardsPage({
     // Получаем все уникальные технологии для фильтра
     let allTechStack: string[] = [];
     try {
-      const allCards = await dataSource
-        .getRepository(InterviewCard)
-        .find({
-          select: ["techStack"],
-        });
+      const allCards = await cardRepo.find({
+        select: ["techStack"],
+      });
 
       allTechStack = Array.from(
         new Set(allCards.flatMap((card) => card.techStack || []))

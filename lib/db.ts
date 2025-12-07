@@ -105,7 +105,7 @@ const tableToEntityMap: Record<string, any> = {
 
 // Helper function to get repository by table name
 // Uses original entity classes to avoid minification issues
-function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
+export function getRepositorySafe<T extends ObjectLiteral>(entityClass: any, tableName: string): Repository<T> {
   // Ensure dataSource is initialized
   if (!dataSource.isInitialized) {
     throw new Error("DataSource is not initialized. Call initDB() first.");
