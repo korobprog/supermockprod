@@ -37,7 +37,7 @@ export default async function CardDetailPage({
         .getOne();
     } catch (queryError) {
       console.error("Query error:", queryError);
-      console.error("Query error details:", JSON.stringify(queryError, Object.getOwnPropertyNames(queryError))));
+      console.error("Query error details:", JSON.stringify(queryError, Object.getOwnPropertyNames(queryError)));
       throw queryError;
     }
 
